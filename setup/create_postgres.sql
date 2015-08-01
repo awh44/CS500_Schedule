@@ -1,12 +1,12 @@
-DROP TABLE Subjects;
-DROP TABLE Courses_Have;
-DROP TABLE Sections;
-DROP TABLE Instructors;
-DROP TABLE Campuses;
-DROP TABLE Terms;
-DROP TABLE TimeBlocks;
-DROP TABLE Meets_At;
-DROP TABLE Course_Offered_In_Term;
+DROP TABLE Subjects CASCADE;
+DROP TABLE Courses_Have CASCADE;
+DROP TABLE Terms CASCADE;
+DROP TABLE Course_Offered_In_Term CASCADE;
+DROP TABLE Instructors CASCADE;
+DROP TABLE Campuses CASCADE;
+DROP TABLE Sections CASCADE;
+DROP TABLE TimeBlocks CASCADE;
+DROP TABLE Meets_At CASCADE;
 
 CREATE TABLE Subjects
 (
@@ -19,10 +19,40 @@ CREATE TABLE Courses_Have
 	num text,
 	name text,
 	description text,
-	credits number,
+	credits real,
 	subject text not NULL,
 	PRIMARY KEY (abbr, num),
 	FOREIGN KEY (subject) REFERENCES Subjects(name)
+);
+
+CREATE TABLE Terms
+(
+	season text,
+	term_type text,
+	year integer,
+	PRIMARY KEY (season, term_type, year)
+);
+
+CREATE TABLE Course_Offered_In_Term
+(
+	subject text,
+	num text,
+	season text,
+	term_type text,
+	year integer,
+	PRIMARY KEY (subject, num, season, term_type, year),
+	FOREIGN KEY (subject, num) REFERENCES Courses_Have(abbr, num),
+	FOREIGN KEY (season, term_type, year) REFERENCES Terms(season, term_type, year)
+);
+
+CREATE TABLE Instructors
+(
+	name text PRIMARY KEY
+);
+
+CREATE TABLE Campuses
+(
+	name text PRIMARY KEY
 );
 
 CREATE TABLE Sections
@@ -44,29 +74,11 @@ CREATE TABLE Sections
 	FOREIGN KEY (campus) REFERENCES Campuses(name)
 );
 
-CREATE TABLE Instructors
-(
-	name text PRIMARY KEY
-);
-
-CREATE TABLE Terms
-(
-	season text,
-	term_type text,
-	year integer,
-	PRIMARY KEY (season, term_type, year)
-);
-
-CREATE TABLE Campuses
-(
-	name text PRIMARY KEY
-);
-
 CREATE TABLE TimeBlocks
 (
 	day text,
-	start_time text,
-	end_time text,
+	start_time time,
+	end_time time,
 	PRIMARY KEY (day, start_time, end_time)
 );
 
@@ -79,22 +91,10 @@ CREATE TABLE Meets_At
     term_type text,
     year integer,
     day text,
-    start_time text,
-    end_time text,
+    start_time time,
+    end_time time,
     PRIMARY KEY (CRN, subject, num, season, term_type, year, day, start_time, end_time),
-    FOREIGN KEY (CRN, subject, num, season, term_type, year) REFERENCES Sections (CRN, subject, num, season, term_type,
-year),
+    FOREIGN KEY (CRN, subject, num, season, term_type, year) REFERENCES Sections (CRN, subject, num, season, term_type, year),
     FOREIGN KEY (day, start_time, end_time) REFERENCES TimeBlocks (day, start_time, end_time)
 );
 
-CREATE TABLE Course_Offered_In_Term
-(
-	subject text,
-	num integer,
-	season text,
-	term_type text,
-	year integer,
-	PRIMARY KEY (subject, num, season, term_type, year),
-	FOREIGN KEY (subject, num) REFERENCES Courses_Have(abbr, num),
-	FOREIGN KEY (season, term_type, year) REFERENCES Terms(season, term_type, year)
-);

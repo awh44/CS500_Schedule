@@ -93,12 +93,9 @@ WHERE
 			subject_name = sub.text
 			abbr = str(sub.get_attribute("value"))
 			if not self.subject_checked_in_term(abbr, quarter_id):
-				#Deselect the previous subject, if needed, and also indicate that the current subject
-				#must be deselected
 				if deselect_index > 0:
-					self.ctrl_click(subjects[deselect_index])
+					subjects[deselect_index].click()
 				deselect_index = index
-
 				#Make sure the subject is in the database
 				self.ensure_subject_by_abbr(subject_name, abbr)
 
@@ -151,6 +148,8 @@ WHERE
 			if found:
 				try:	
 					credits = row.find_element_by_xpath(".//*[local-name()='td'][7]").text
+					if "-" in credits:
+						credits, _ = credits.split("-")
 				except:
 					credits = None
 				
@@ -166,10 +165,10 @@ WHERE
 				enrolled = row.find_element_by_xpath(".//*[local-name()='td'][12]").text
 				self.insert_section(CRN, section, capacity, enrolled, abbr, num, instructor, quarter_id, campus)
 
-			self.ensure_times_for_section(CRN, quarter_id, row)
+			self.ensure_times_for_section(CRN, abbr, num, quarter_id, row)
 					
 
-	def ensure_times_for_section(self, CRN, quarter_id, day_row):
+	def ensure_times_for_section(self, CRN, subject, num, quarter_id, day_row):
 		try:
 			days_of_week = day_row.find_element_by_xpath(".//*[local-name()='td'][9]").text.strip()
 		except:
@@ -190,4 +189,4 @@ WHERE
 						start, end = time.split("-")
 						for day_of_week in days_of_week:
 							self.ensure_timeblock(day_of_week, start, end)
-							self.ensure_meetsat(CRN, quarter_id, day_of_week, start, end)
+							self.ensure_meetsat(CRN, subject, num, quarter_id, day_of_week, start, end)

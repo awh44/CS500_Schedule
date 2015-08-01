@@ -45,7 +45,11 @@ class SiteParser:
 	def ensure_course(self, abbr, number, name, description, credits, subject):
 		courseobj = self.c.execute("SELECT * FROM Courses_Have WHERE abbr = ? AND num = ?", (abbr, number)).fetchone()
 		if courseobj == None:
-			self.c.execute("INSERT INTO Courses_Have(abbr, num, name, description, credits, subject) VALUES(?, ?, ?, ?, ?, ?)", (abbr, number, name, description, credits, subject))
+			try:
+				self.c.execute("INSERT INTO Courses_Have(abbr, num, name, description, credits, subject) VALUES(?, ?, ?, ?, ?, ?)", (abbr, number, name, description, credits, subject))
+			except:
+				print abbr, number, name, description, credits, subject
+				sys.exit(1)
 
 	def ensure_instructor(self, instructor):
 		instructorobj = self.c.execute("SELECT * FROM Instructors WHERE name = ?", (instructor,)).fetchone()
@@ -57,10 +61,10 @@ class SiteParser:
 		if timeblockobj == None:
 			self.c.execute("INSERT INTO TimeBlocks(day, start_time, end_time) VALUES(?, ?, ?)", (day, start_time, end_time))
 
-	def ensure_meetsat(self, CRN, quarter_id, day, start_time, end_time):
-		meetsatobj = self.c.execute("SELECT * FROM Meets_At WHERE CRN = ? AND day = ? AND start_time = ? AND end_time = ?", (CRN, day, start_time, end_time)).fetchone()
+	def ensure_meetsat(self, CRN, subject, num, quarter_id, day, start_time, end_time):
+		meetsatobj = self.c.execute("SELECT * FROM Meets_At WHERE CRN = ? AND subject = ? AND num = ? AND season = ? AND term_type = ? AND year= ? AND day = ? AND start_time = ? AND end_time = ?", (CRN, subject, num) + quarter_id + (day, start_time, end_time)).fetchone()
 		if meetsatobj == None:
-			self.c.execute("INSERT INTO Meets_At(CRN, offered_in_season, offered_in_type, offered_in_year, day, start_time, end_time) VALUES(?, ?, ?, ?, ?, ?, ?)", (CRN,) + quarter_id + (day, start_time, end_time))
+			self.c.execute("INSERT INTO Meets_At(CRN, subject, num, season, term_type, year, day, start_time, end_time) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)", (CRN, subject, num) + quarter_id + (day, start_time, end_time))
 
 	def ensure_course_offered_in_term(self, subject, num, quarter_id):
 		offeredinobj = self.c.execute("""SELECT *
@@ -72,7 +76,7 @@ WHERE
 			self.c.execute("INSERT INTO Course_Offered_In_Term(subject, num, season, term_type, year) VALUES(?, ?, ?, ?, ?)", (subject, num) + quarter_id)
 
 	def insert_section(self, CRN, section, capacity, enrolled, abbr, course_number, instructor, quarter_id, campus):
-		self.c.execute("INSERT INTO Sections(CRN, section_id, capacity, enrolled, instance_of_subject, instance_of_number, taught_by, offered_in_season, offered_in_type, offered_in_year, offered_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (CRN, section, capacity, enrolled, abbr, course_number, instructor) + quarter_id + (campus,))
+		self.c.execute("INSERT INTO Sections(CRN, subject, num, season, term_type, year, section_id, capacity, enrolled, instructor, campus) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (CRN, abbr, course_number,) + quarter_id + (section, capacity, enrolled, instructor, campus))
 
 	def get_sections_for_subject_in_term(self, subject, quarter_id, use_abbr = False):
 		to_check = "abbr" if use_abbr else "subject"
@@ -80,8 +84,8 @@ WHERE
 FROM
 	Courses_Have CH, Sections S
 WHERE
-	CH.""" + to_check + """ = ? AND CH.abbr = S.instance_of_subject AND
-	S.offered_in_season = ? AND S.offered_in_type = ? AND S.offered_in_year = ?""", (subject,) + quarter_id)
+	CH.""" + to_check + """ = ? AND CH.abbr = S.subject AND
+	S.season = ? AND S.term_type = ? AND S.year = ?""", (subject,) + quarter_id)
 
 	def subject_checked_in_term(self, subject, quarter_id, use_abbr = False):
 		return self.get_sections_for_subject_in_term(subject, quarter_id, use_abbr).fetchone() != None

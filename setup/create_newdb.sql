@@ -80,19 +80,19 @@ CREATE TABLE TimeBlocks
 
 CREATE TABLE Meets_At
 (
- 	CRN integer,
-    subject text,
-    num text,
-    season text,
-    term_type text,
-    year integer,
-    day text,
-    start_time text,
-    end_time text,
-    PRIMARY KEY (CRN, subject, num, season, term_type, year, day, start_time, end_time),
-    FOREIGN KEY (CRN, subject, num, season, term_type, year) REFERENCES Sections (CRN, subject, num, season, term_type,
-year),
-    FOREIGN KEY (day, start_time, end_time) REFERENCES TimeBlocks (day, start_time, end_time)
+	CRN integer,
+	subject text,
+	num text,
+	season text,
+	term_type text,
+	year integer,
+	day text,
+	start_time text,
+	end_time text,
+	PRIMARY KEY (CRN, subject, num, season, term_type, year, day, start_time, end_time),
+	FOREIGN KEY (CRN, subject, num, season, term_type, year) REFERENCES Sections (CRN, subject, num, season, term_type,
+	year),
+	FOREIGN KEY (day, start_time, end_time) REFERENCES TimeBlocks (day, start_time, end_time)
 );
 
 CREATE TABLE Course_Offered_In_Term

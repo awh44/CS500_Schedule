@@ -1,9 +1,9 @@
 @(message: String)
 
 @main("Drexel's Improved Master Schedule") {
-	<option>Computer Science</option>
+	@controllers.Application.getSubjectOptions()
 }  {
-	<option>100</option>
+	@controllers.Application.getNumberOptions()
 } {
 	<option>&lt;</option>
 	<option>&lt;=</option>
@@ -11,7 +11,7 @@
 	<option>&gt;=</option>
 	<option>&gt;</option>
 } {
-	<option>Fall Quarter 2014</option>
+	@controllers.Application.getTermOptions()
 } {
 	<option>1.0</option><option>2.0</option><option>3.0</option><option>@message</option>
 } {

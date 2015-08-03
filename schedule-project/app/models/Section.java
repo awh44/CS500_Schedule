@@ -8,6 +8,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import java.util.List;
+
 @Entity
 @Table(name = "Sections")
 public class Section extends Model
@@ -23,8 +25,9 @@ public class Section extends Model
 	private int enrolled_;
 	private String instructor_;
 	private String campus_;
+	private List<Meets_At> meets_at_;
 
-	public Section(int CRN, String subject, String num, String season, String term_type, int year, String section_id, int capacity, int enrolled, String instructor, String campus)
+	public Section(int CRN, String subject, String num, String season, String term_type, int year, String section_id, int capacity, int enrolled, String instructor, String campus, List<Meets_At> meets_at)
 	{
 		setCRN(CRN);
 		setSubject(subject);
@@ -37,6 +40,7 @@ public class Section extends Model
 		setEnrolled(enrolled);
 		setInstructor(instructor);
 		setCampus(campus);
+		setMeetsAt(meets_at);
 	}
 
 	public void setCRN(int CRN)
@@ -149,4 +153,13 @@ public class Section extends Model
 		return campus_;
 	}
 
+	public void setMeetsAt(List<Meets_At> meets_at)
+	{
+		meets_at_ = meets_at;
+	}
+
+	public List<Meets_At> getMeetsAt()
+	{
+		return meets_at_;
+	}
 }

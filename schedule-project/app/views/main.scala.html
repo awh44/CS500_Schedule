@@ -1,10 +1,12 @@
-@(title: String)(course_options: Html)(number_options: Html)(operator_options: Html)(quarter_options: Html)(credit_options: Html)(instructor_options: Html)(campus_options: Html)(time_operators: Html)(time_options: Html)
+@(title: String)(subject_options: Html)(number_options: Html)(operator_options: Html)(quarter_options: Html)(credit_options: Html)(instructor_options: Html)(campus_options: Html)(time_operators: Html)(time_options: Html)
 
 <!DOCTYPE html>
 
 <html lang="en">
 <head>
 	<title>@title</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script> 
+	<script src="../assets/js/main.js"></script>
 	<link rel="stylesheet" href='@routes.Assets.versioned("css/bootstrap.css")'>
 	<link rel="stylesheet" href='@routes.Assets.versioned("css/main.css")'>
 </head>
@@ -21,15 +23,16 @@
 					</div>
 				</div>
 				<div class="row">
-					<select class="col-md-6" name="subject">
-						@course_options
+					<select id="quarters_subject" class="col-md-6" name="subject" onchange="quarters_subject_onchange()">
+						@subject_options
 					</select>
-					<select class="col-md-6" name="number">
-						@number_options
+					<select id="quarters_num" class="col-md-6" name="number">
 					</select>
 				</div>
 				<div class="row">
-					<input class="col-md-3" type="submit" value="Find"/>
+					<input class="col-md-3" type="button" value="Find All" onclick="find_all_sections_click();"/>
+				</div>
+				<div id="quarters_results" class="results-set">
 				</div>
 			</form>
 		</div>
@@ -58,7 +61,7 @@
 				</div>
 				<div class="row">
 					<select class="col-md-2" multiple name="subject">
-						@course_options
+						@subject_options
 					</select>
 					<select class="col-md-1" name="number_operator">
 						@operator_options

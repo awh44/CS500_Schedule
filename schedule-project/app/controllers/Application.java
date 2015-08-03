@@ -19,6 +19,8 @@ import java.sql.SQLException;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -174,6 +176,65 @@ public class Application extends Controller
 		return ok(result);
 	}
 
+	private static List<String> getInstructorsInternal() throws SQLException
+	{
+		List<String> instructors = new ArrayList<String>();
+		Connection conn = DB.getConnection();
+		PreparedStatement statement = conn.prepareStatement(
+			"SELECT name " +
+			"FROM Instructors " +
+			"ORDER BY name");
+		ResultSet rs = statement.executeQuery();
+		while (rs.next())
+		{
+			instructors.add(rs.getString("name"));
+		}
+
+		rs.close();
+		statement.close();
+		conn.close();
+		return instructors;
+	}
+
+	public static Result getInstructors()
+	{
+		try
+		{
+			return ok(Json.toJson(getInstructorsInternal()));
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			return internalServerError("[]");
+		}
+	}
+
+	public static String getInstructorsOptions() throws SQLException
+	{
+		String result = "";
+		List<String> instructors = getInstructorsInternal();
+		for (int i = 0; i < instructors.size(); i++)
+		{
+			String instructor = instructors.get(i);
+			result += "<option value=\"" + instructor + "\">" + instructor + "</option>";
+		}
+
+		return result;
+	}
+
+	public static Html getInstructorsOptionsAsHtml()
+	{
+		try
+		{
+			return Html.apply(getInstructorsOptions());
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			return Html.apply("");
+		}
+	}
+
 	public static Html getNumberOptions()
 	{
 		String result = "";
@@ -260,49 +321,79 @@ public class Application extends Controller
 		return "";
 	}
 
-	private static List<Section> getSectionsForCourseInternal(String subject, String num) throws SQLException
+	private static Map<Course_Offered_In_Term, List<Section>> getSectionsForCourseInternal(String subject, String num) throws SQLException
 	{
-		List<Section> sections = new ArrayList<Section>();
+		Map<Course_Offered_In_Term, List<Section>> sections = new HashMap<Course_Offered_In_Term, List<Section>>();
 		Connection conn = DB.getConnection();
 		PreparedStatement statement = conn.prepareStatement(
-			"SELECT CRN, subject, num, season, term_type, year, section_id, capacity, enrolled, instructor, campus " +
-			"FROM Sections " + 
-			"WHERE subject = ? AND num = ? " + 
-			"ORDER BY year, " +
+			"SELECT " +
+				"S.CRN AS SCRN, " +
+				"COIT.subject AS COITsubject, " +
+				"COIT.num AS COITnum, " +
+				"COIT.season AS COITseason, " +
+				"COIT.term_type AS COITterm_type, " +
+				"COIT.year AS COITyear, " + 
+				"S.section_id AS Ssection_id, " +
+				"S.capacity AS Scapacity, " +
+				"S.enrolled AS Senrolled, " +
+				"S.instructor AS Sinstructor, " +
+				"S.campus AS Scampus " +
+			"FROM " +
+				"Course_Offered_In_Term COIT LEFT OUTER JOIN Sections S ON " + 
+					"COIT.subject = S.subject AND COIT.num = S.num AND COIT.season = S.season AND " +
+					"COIT.term_type = S.term_type AND COIT.year = S.year " +
+			"WHERE COIT.subject = ? AND COIT.num = ? " + 
+			"ORDER BY COIT.year, " +
 			"CASE " + 
-			"WHEN season = 'Winter' THEN 1 " +
-			"WHEN season = 'Spring' THEN 2 " +
-			"WHEN season = 'Summer' THEN 3 " + 
-			"WHEN season = 'Fall' THEN 4 ELSE 5 END");
+			"WHEN COIT.season = 'Winter' THEN 1 " +
+			"WHEN COIT.season = 'Spring' THEN 2 " +
+			"WHEN COIT.season = 'Summer' THEN 3 " + 
+			"WHEN COIT.season = 'Fall' THEN 4 ELSE 5 END");
 		statement.setString(1, subject);
 		statement.setString(2, num);
 
 		ResultSet rs = statement.executeQuery();
+		String last_season = null, last_type = null;
+		Integer last_year = null;
+		Course_Offered_In_Term coit = null;
 		while (rs.next())
 		{
-			int CRN = rs.getInt("CRN");
-			String season = rs.getString("season");
-			String term_type = rs.getString("term_type");
-			int year = rs.getInt("year");
-			List<Meets_At> meets_at = getMeetsAtInternal(CRN, subject, num, season, term_type, year);
+			String season = rs.getString("COITseason");
+			String term_type = rs.getString("COITterm_type");
+			int year = rs.getInt("COITyear");
 
-			Section section = new Section
-			(
-				CRN,
-				subject,
-				num,
-				season,
-				term_type,
-				year,
-				rs.getString("section_id"),
-				rs.getInt("capacity"),
-				rs.getInt("enrolled"),
-				rs.getString("instructor"),
-				rs.getString("campus"),
-				meets_at
-			);
+			if (!season.equals(last_season) || !term_type.equals(last_type) || year != last_year)
+			{
+				coit = new Course_Offered_In_Term(subject, num, season, term_type, year);
+				sections.put(coit, new ArrayList<Section>());
+			}
+
+			Integer CRN = rs.getInt("SCRN");
+			if (!rs.wasNull())
+			{
+				List<Meets_At> meets_at = getMeetsAtInternal(CRN, subject, num, season, term_type, year);
+				Section section = new Section
+				(
+					CRN,
+					subject,
+					num,
+					season,
+					term_type,
+					year,
+					rs.getString("Ssection_id"),
+					rs.getInt("Scapacity"),
+					rs.getInt("Senrolled"),
+					rs.getString("Sinstructor"),
+					rs.getString("Scampus"),
+					meets_at
+				);
 			
-			sections.add(section);
+				sections.get(coit).add(section);
+			}
+
+			last_season = season;
+			last_type = term_type;
+			last_year = year;
 		}
 
 		rs.close();
@@ -320,75 +411,76 @@ public class Application extends Controller
 		}
 		catch (SQLException e)
 		{
-			return internalServerError("[]");
+			return internalServerError("{}");
 		}
 	}
 
 	public static String getSectionsForCourseTables(String subject, String num) throws SQLException
 	{
 		String result = "";
-		List<Section> sections = getSectionsForCourseInternal(subject, num);
-		String prev_quarter = null;
-		for (int i = 0; i < sections.size(); i++)
+		Map<Course_Offered_In_Term, List<Section>> coit_sections = getSectionsForCourseInternal(subject, num);
+		for (Course_Offered_In_Term coit : coit_sections.keySet())
 		{
-			System.out.println("burg");
-			Section section = sections.get(i);
-			String quarter = section.getSeason() + " " + section.getType() + " " + section.getYear();
-			if (!quarter.equals(prev_quarter))
-			{
-				if (prev_quarter != null)
-				{
-					result += "</tbody></table></div>";
-				}
-				result += "<div class=\"quarter-table\">";
-				result += "<h3>" + quarter  + "</h3>";
-
-				result +=
-					"<div class=\"grid\">" +
-						"<div class=\"row\">" +
-							 "<h4 class=\"col-md-2\">CRN</h4>" +
-							 "<h4 class=\"col-md-2\">Section</h4>" +
-							 "<h4 class=\"col-md-1\">Capacity</h4>" +
-							 "<h4 class=\"col-md-1\">Enrolled</h4>" +
-							 "<h4 class=\"col-md-2\">Instructor</h4>" +
-							 "<h4 class=\"col-md-2\">Campus</h4>" +
-							 "<h4 class=\"col-md-2\">Meets At</h4>" +
-						"</div>";
-			}
-
-			prev_quarter = quarter;
-
+			String quarter = coit.getSeason() + " " + coit.getType() + " " + coit.getYear();
+			result += "<div class=\"quarter-table\">";
+			result += "<h3>" + quarter + "</h3>";
 			result +=
-				"<div class=\"row\">" +
-					"<span class=\"col-md-2\">" + section.getCRN() + "</span>" +
-					"<span class=\"col-md-2\">" + section.getSectionId() + "</span>" +
-					"<span class=\"col-md-1\">" + section.getCapacity() + "</span>" +
-					"<span class=\"col-md-1\">" + section.getEnrolled() + "</span>" +
-					"<span class=\"col-md-2\">" + section.getInstructor() + "</span>" +
-					"<span class=\"col-md-2\">" + section.getCampus() + "</span>" +
-					"<span class=\"col-md-2\">";
+				"<div class=\"grid\">" +
+					"<div class=\"row\">" +
+						 "<h4 class=\"col-md-2\">CRN</h4>" +
+						 "<h4 class=\"col-md-2\">Section</h4>" +
+						 "<h4 class=\"col-md-1\">Capacity</h4>" +
+						 "<h4 class=\"col-md-1\">Enrolled</h4>" +
+						 "<h4 class=\"col-md-2\">Instructor</h4>" +
+						 "<h4 class=\"col-md-2\">Campus</h4>" +
+						 "<h4 class=\"col-md-2\">Meets At</h4>" +
+					"</div>";
 
-			List<Meets_At> meets = section.getMeetsAt();
-			if (meets.size() > 0)
+			List<Section> sections = coit_sections.get(coit);
+			if (sections.size() > 0)
 			{
-				Meets_At m = meets.get(0);
-				result += m.getDay() + " " + m.getStartTime() + "-" + m.getEndTime();
-				for (int j = 1; j < meets.size(); j++)
+				for (int i = 0; i < sections.size(); i++)
 				{
-					m = meets.get(j);
-					result += "<br>" + m.getDay() + " " + m.getStartTime() + "-" + m.getEndTime();
+					Section section = sections.get(i);
+					result +=
+						"<div class=\"row\">" +
+							"<span class=\"col-md-2\">" + section.getCRN() + "</span>" +
+							"<span class=\"col-md-2\">" + section.getSectionId() + "</span>" +
+							"<span class=\"col-md-1\">" + section.getCapacity() + "</span>" +
+							"<span class=\"col-md-1\">" + section.getEnrolled() + "</span>" +
+							"<span class=\"col-md-2\">" + section.getInstructor() + "</span>" +
+							"<span class=\"col-md-2\">" + section.getCampus() + "</span>" +
+							"<span class=\"col-md-2\">";
+
+					List<Meets_At> meets = section.getMeetsAt();
+					if (meets.size() > 0)
+					{
+						Meets_At m = meets.get(0);
+						result += m.getDay() + " " + m.getStartTime() + "-" + m.getEndTime();
+						for (int j = 1; j < meets.size(); j++)
+						{
+							m = meets.get(j);
+							result += "<br>" + m.getDay() + " " + m.getStartTime() + "-" + m.getEndTime();
+						}
+						result += "</span>";
+					}
+					else
+					{
+						result += "None</span>";
+					}
+
+					result += "</div>";
 				}
-				result += "</span>";
+
 			}
 			else
 			{
-				result += "None</span>";
+				result += "<div class=\"row\">" + "<span class=\"col-md-12\">No section information.</option></div>";
 			}
 
-			result += "</div>";
+			result += "</div></div>";
 		}
 
-		result += "</div></div>";
 		return result;
 	}
 
@@ -455,4 +547,180 @@ public class Application extends Controller
 
 		return meets_at;
 	}
+
+	private static SortedMap<String, Integer> getExtremaPerSeasonInternal(String subject, String num, boolean isMostRecent) throws SQLException
+	{
+		SortedMap<String, Integer> extrema = new TreeMap<String, Integer>();
+		Connection conn = DB.getConnection();
+		String st = "SELECT season, " + (isMostRecent ? "MAX" : "MIN") + "(year) AS extremum " +
+			"FROM Course_Offered_In_Term " +
+			"WHERE subject = ? AND num = ? " +
+			"GROUP BY season " +
+			"ORDER BY " +
+			"CASE " +
+			"WHEN season = 'Fall' THEN 1 " +
+			"WHEN season = 'Winter' THEN 2 " +
+			"WHEN season = 'Spring' THEN 3 " +
+			"WHEN season = 'Summer' THEN 4 " +
+			"ELSE 5 END";
+		PreparedStatement statement = conn.prepareStatement(st);
+		statement.setString(1, subject);
+		statement.setString(2, num);
+
+		ResultSet rs = statement.executeQuery();
+		while (rs.next())
+		{
+			extrema.put(rs.getString("season"), rs.getInt("extremum"));
+		}
+
+		rs.close();
+		statement.close();
+		conn.close();
+
+		return extrema;
+	}
+
+	private static SortedMap<String, Integer> getMostRecentPerSeasonInternal(String subject, String num) throws SQLException
+	{
+		return getExtremaPerSeasonInternal(subject, num, true);
+	}
+
+	public static String getExtremaPerSeasonTable(String subject, String num, boolean isMostRecent) throws SQLException
+	{
+		SortedMap<String, Integer> extrema = getExtremaPerSeasonInternal(subject, num, isMostRecent);
+		String result = "";
+		for (String season : extrema.keySet())
+		{
+			result += "<span class=\"season-label\">" + season + ": </span>";
+			result += "<span class=\"season-extrema\">" + extrema.get(season) + "</span>";
+			result += "<br>";
+		}
+
+		return result;
+	}
+
+	public static Result getMostRecentPerSeasonTableRoute(String subject, String num)
+	{
+		try
+		{
+			return ok(getExtremaPerSeasonTable(subject, num, true));
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			return internalServerError("");
+		}
+	}
+
+	public static SortedMap<String, Integer> getEarliestPerSeasonInternal(String subject, String num) throws SQLException
+	{
+		return getExtremaPerSeasonInternal(subject, num, false);
+	}
+
+	public static Result getEarliestPerSeasonTableRoute(String subject, String num)
+	{
+		try
+		{
+			return ok(getExtremaPerSeasonTable(subject, num, false));
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			return internalServerError("");
+		}
+	}
+
+	public static List<Courses_Have> getCoursesForInstructorInternal(String name) throws SQLException
+	{
+		List<Courses_Have> courses = new ArrayList<Courses_Have>();
+		Connection conn = DB.getConnection();
+		PreparedStatement statement = conn.prepareStatement(
+			"SELECT DISTINCT " +
+				"CH.abbr AS CHabbr, " +
+				"CH.num AS CHnum, " +
+				"CH.name AS CHname, " +
+				"CH.description AS CHdesc, " +
+				"CH.credits AS CHcredits, " +
+				"CH.subject AS CHsubject " +
+			"FROM Courses_Have CH, Sections S " +
+			"WHERE CH.abbr = S.subject AND CH.num = S.num AND S.instructor = ? " +
+			"ORDER BY CH.abbr, CH.num");
+		statement.setString(1, name);
+
+		ResultSet rs = statement.executeQuery();
+		while (rs.next())
+		{
+			courses.add(new Courses_Have
+			(
+				rs.getString("CHabbr"),
+				rs.getString("CHnum"),
+				rs.getString("CHname"),
+				rs.getString("CHdesc"),
+				rs.getDouble("CHcredits"),
+				rs.getString("CHsubject")
+			));
+		}
+
+		return courses;
+	}
+
+	public static Result getCoursesForInstructor(String name)
+	{
+		try
+		{
+			return ok(Json.toJson(getCoursesForInstructorInternal(name)));
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			return internalServerError("[]");
+		}
+	}
+
+	public static String getCoursesForInstructorTable(String name) throws SQLException
+	{
+		String result =
+			"<div class=\"grid\">" +
+				"<div class=\"row\">" +
+					"<div class=\"col-md-3\"><h4>Subject</h4></div>" +
+					"<div class=\"col-md-1\"><h4>Abbreviation</h4></div>" +
+					"<div class=\"col-md-1\"><h4>Course Number</h4></div>" +
+					"<div class=\"col-md-2\"><h4>Course Name</h4></div>" +
+					"<div class=\"col-md-4\"><h4>Description</h4></div>" +
+					"<div class=\"col-md-1\"><h4>Credits</h4></div>" +
+				"</div>";
+		
+		List<Courses_Have> courses = getCoursesForInstructorInternal(name);
+		for (int i = 0; i < courses.size(); i++)
+		{
+			Courses_Have course = courses.get(i);
+			result += 
+				"<div class=\"row\">" +
+					"<span class=\"col-md-3\">" + course.getSubject() + "</span>" +
+					"<span class=\"col-md-1\">" + course.getAbbr() + "</span>" +
+					"<span class=\"col-md-1\">" + course.getNum() + "</span>" +
+					"<span class=\"col-md-2\">" + course.getName() + "</span>" +
+					"<span class=\"col-md-4\">" + course.getDescription() + "</span>" +
+					"<span class=\"col-md-1\">" + course.getCredits() + "</span>" +
+				"</div>";
+		}
+
+		result += "</div>";
+
+		return result;
+	}
+
+	public static Result getCoursesForInstructorTableRoute(String name)
+	{
+		try
+		{
+			return ok(getCoursesForInstructorTable(name));
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			return internalServerError("");
+		}
+	}
 }
+

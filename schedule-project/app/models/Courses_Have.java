@@ -74,7 +74,7 @@ public class Courses_Have extends Model
 		credits_ = credits;
 	}
 
-	private double getCredits()
+	public double getCredits()
 	{
 		return credits_;
 	}

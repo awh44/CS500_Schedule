@@ -30,9 +30,29 @@
 					</select>
 				</div>
 				<div class="row">
-					<input class="col-md-3" type="button" value="Find All" onclick="find_all_sections_click();"/>
+					<input class="col-md-4" type="button" value="Find All" onclick="find_all_sections_click();"/>
+					<input class="col-md-4" type="button" value="Find Most Recent per Season" onclick="find_most_recent_per_season_click();"/>
+					<input class="col-md-4" type="button" value="Find Earliest per Season" onclick="find_earliest_per_season_click();"/>
 				</div>
 				<div id="quarters_results" class="results-set">
+				</div>
+			</form>
+		</div>
+		<div class="filter-set container">
+			<h3>Find All Courses a Professor Has Taught</h3>
+			<form name="coursesForInstructor">
+				<div class="row">
+					<div class="col-md-4">
+						<h4>Instructor</h4>
+					</div>
+				</div>
+				<div class="row">
+					<select id="instructors_instructor" class="col-md-4" name="instructor">
+						@instructor_options;
+					</select>
+					<input class="col-md-4" type="button" value="Find" onclick="find_courses_for_instructor_click();"/>
+				</div>
+				<div id="instructors_results" class="results-set">
 				</div>
 			</form>
 		</div>

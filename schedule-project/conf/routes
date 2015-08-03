@@ -9,9 +9,21 @@ GET     /getSubjects                controllers.Application.getSubjects()
 
 GET     /getCoursesForSubject       controllers.Application.getCoursesForSubject(abbr: String)
 
+GET     /getInstructors             controllers.Application.getInstructors()
+
+GET     /getCoursesForInstructor    controllers.Application.getCoursesForInstructor(name: String)
+
 GET     /getCoursesForSubjectOptionsRoute controllers.Application.getCoursesForSubjectOptionsRoute(abbr: String)
 
+GET     /getSectionsForCourse       controllers.Application.getSectionsForCourse(subject: String, num: String)
+
 GET     /getSectionsForCourseTablesRoute controllers.Application.getSectionsForCourseTablesRoute(subject: String, num: String)
+
+GET     /getMostRecentPerSeasonTableRoute controllers.Application.getMostRecentPerSeasonTableRoute(subject: String, num: String)
+
+GET     /getEarliestPerSeasonTableRoute controllers.Application.getEarliestPerSeasonTableRoute(subject: String, num: String)
+
+GET     /getCoursesForInstructorTableRoute controllers.Application.getCoursesForInstructorTableRoute(name: String)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

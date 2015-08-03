@@ -77,4 +77,62 @@ public class Course_Offered_In_Term extends Model
 		return year_;
 	}
 
+	/*
+	public int compareTo(Course_Offered_In_Term other)
+	{
+		if (year_ < other.year_)
+			return -1;
+
+		if (year_ > other.year_)
+			return 1;
+
+		if (season_.equals(other.season_))
+		{
+			return 0
+		}
+
+		//same year and seasons aren't the same - fall always comes last,
+		//so know that the this object must come after the current
+		if (season_.equals("Fall"))
+			return 1;
+
+		if (other.season_.equals("Winter"))
+			return 1;
+
+		if (season_.equals("Summer"))
+			return 1;
+
+		return -1;
+	}*/
+
+	@Override
+	public int hashCode()
+	{
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + subject_.hashCode();
+		result = prime * result + num_.hashCode();
+		result = prime * result + season_.hashCode();
+		result = prime * result + term_type_.hashCode();
+		result = prime * result + year_;
+
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Course_Offered_In_Term other = (Course_Offered_In_Term) obj;
+		return subject_ == other.subject_ &&
+			num_ == other.num_ &&
+			season_ == other.season_ &&
+			term_type_ == other.term_type_ &&
+			year_ == other.year_;
+	}
 }

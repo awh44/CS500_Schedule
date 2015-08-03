@@ -3,6 +3,7 @@
 function quarters_subject_onchange()
 {
 	$("#quarters_num").empty();
+	$("#quarters_results").empty();
 	var abbr = $("#quarters_subject").val();
 	$.ajax
 	(
@@ -18,7 +19,7 @@ function quarters_subject_onchange()
 	);
 }
 
-function find_all_sections_click()
+function course_in_quarter_query(url)
 {
 	$("#quarters_results").empty();
 	var num = $("#quarters_num").val().split(" ");
@@ -27,10 +28,47 @@ function find_all_sections_click()
 		{
 			"type": "GET",
 			"data": { "subject": num[0], "num": num[1] },
-			"url": "getSectionsForCourseTablesRoute",
+			"url": url,
 			"success": function (data)
 			{
 				$("#quarters_results").append(data);
+			},
+			"error": function (jqXHR, textStatus, data)
+			{
+				alert(data);
+			}
+		}
+	);
+}
+
+function find_all_sections_click()
+{
+	course_in_quarter_query("getSectionsForCourseTablesRoute");
+}
+
+function find_most_recent_per_season_click()
+{
+	course_in_quarter_query("getMostRecentPerSeasonTableRoute");
+}
+
+function find_earliest_per_season_click()
+{
+	course_in_quarter_query("getEarliestPerSeasonTableRoute");
+}
+
+function find_courses_for_instructor_click()
+{
+	$("#instructors_results").empty();
+	var name = $("#instructors_instructor").val();
+	$.ajax
+	(
+		{
+			"type": "GET",
+			"data": { "name": name },
+			"url": "getCoursesForInstructorTableRoute",
+			"success": function (data)
+			{
+				$("#instructors_results").append(data);
 			},
 			"error": function (jqXHR, textStatus, data)
 			{

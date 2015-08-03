@@ -36,7 +36,7 @@ class TMSParser(SiteParser):
 		self.cleanup()
 	
 	def check_all_quarters(self):
-		quarter_links = self.driver.find_elements_by_xpath("//*[local-name()='td' and contains(text(), 'Term Courses')]//ancestor::*[local-name()='table'][1]//*[local-name()='a' and not(contains(., '15-16') or contains(., '14-15') or contains(., 'Fall Quarter 13-14') or contains(., 'Semester'))]")
+		quarter_links = self.driver.find_elements_by_xpath("//*[local-name()='td' and contains(text(), 'Term Courses')]//ancestor::*[local-name()='table'][1]//*[local-name()='a' and not(contains(., '15-16') or contains(., 'Semester'))]")
 		for link in quarter_links:
 			quarter = link.text
 			season, term_type, _ = quarter.split()

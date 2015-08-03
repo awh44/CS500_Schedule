@@ -83,19 +83,13 @@ WHERE
 				return
 
 	def check_all_subjects(self, quarter_id):
-		last_sub_text = self.get_last_text(self.SUBJECTS_XPATH)
-		index = 0
-		deselect_index = -1
-		while True:
-			subjects = self.driver.find_elements_by_xpath(self.SUBJECTS_XPATH)
+		subjects = self.driver.find_elements_by_xpath(self.SUBJECTS_XPATH)
+		for index in range(len(subjects)):
 			sub = subjects[index]
 			#Get the name and the abbreviation of the subject
 			subject_name = sub.text
 			abbr = str(sub.get_attribute("value"))
 			if not self.subject_checked_in_term(abbr, quarter_id):
-				if deselect_index > 0:
-					subjects[deselect_index].click()
-				deselect_index = index
 				#Make sure the subject is in the database
 				self.ensure_subject_by_abbr(subject_name, abbr)
 
@@ -106,13 +100,13 @@ WHERE
 									
 				#Go back for the next subject
 				self.driver.back()
+		
+				#Re-get the subjects and deselect the current element in the multiselect		
+				subjects = self.driver.find_elements_by_xpath(self.SUBJECTS_XPATH)
+				self.ctrl_click(subjects[index])
 
 				#Commit the information for the current subject
 				self.conn.commit()
-			
-			index += 1
-			if subject_name == last_sub_text:
-				return
 
 	def check_all_courses(self, abbr, subject_name, quarter_id):
 		numbers = self.driver.find_elements_by_xpath(self.COURSE_ROWS_XPATH)

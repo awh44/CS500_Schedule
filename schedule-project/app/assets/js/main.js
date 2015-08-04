@@ -19,6 +19,25 @@ function quarters_subject_onchange()
 	);
 }
 
+function instr_subject_onchange()
+{
+	$("#instr_num").empty();
+	$("#instr_results").empty();
+	var abbr = $("#instr_subject").val();
+	$.ajax
+	(
+		{
+			"type": "GET",
+			"data": { "abbr": abbr },
+			"url": "getCoursesForSubjectOptionsRoute",
+			"success": function (data)
+			{
+				$("#instr_num").append(data);
+			}
+		}
+	);
+}
+
 function course_in_quarter_query(url)
 {
 	$("#quarters_results").empty();
@@ -71,6 +90,28 @@ function find_courses_for_instructor_click()
 				$("#instructors_results").append(data);
 			},
 			"error": function (jqXHR, textStatus, data)
+			{
+				alert(data);
+			}
+		}
+	);
+}
+
+function find_instructors_for_course_click()
+{
+	$("#instr_results").empty();
+	var name = $("#instr_subject").val();
+	$.ajax
+	(
+		{
+			"type": "GET",
+			"data": { "name": name },
+			"url": "getInstructorsForCourseTableRoute",
+			"success": function (data)
+			{
+				$("#instr_results").append(data);
+			},
+			"error": function(jqXHR, textStatus, data)
 			{
 				alert(data);
 			}

@@ -781,5 +781,81 @@ public class Application extends Controller
 			return internalServerError("");
 		}
 	}
+	public static List<Instructor> getInstructorsForCourseInternal(String name) throws SQLException
+	{
+		List<Instructor> instructors = new ArrayList<Instructor>();
+		Connection conn = DB.getConnection();
+		PreparedStatement statement = conn.prepareStatement(
+			"SELECT DISTINCT " +
+				"I.name AS Iname, " +
+			"FROM Instructors I" +
+				"JOIN Sections S" + 
+					"ON S.instructor = I.name" +
+				"JOIN Course_Offered_In_Term COIT" +
+					"ON COIT.subject = S.subject AND COIT.num = S.num" +
+			"WHERE COIT.subject = ? AND COIT.num = ?");
+			
+		statement.setString(1, name);
+
+		ResultSet rs = statement.executeQuery();
+		while (rs.next())
+		{
+			instructors.add(new Instructor
+			(
+				rs.getString("Iname")
+			));
+		}
+
+		return instructors;
+	}
+
+	public static Result getInstructorsForCourse(String name)
+	{
+		try
+		{
+			return ok(Json.toJson(getInstructorsForCourseInternal(name)));
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			return internalServerError("[]");
+		}
+	}
+
+	public static String getInstructorsForCourseTable(String name) throws SQLException
+	{
+		String result =
+			"<div class=\"grid\">" +
+				"<div class=\"row\">" +
+					"<div class=\"col-md-3\"><h4>Instructors</h4></div>" +
+				"</div>";
+		
+		List<Instructor> instructors = getInstructorsForCourseInternal(name);
+		for (int i = 0; i < instructors.size(); i++)
+		{
+			Instructor instructor = instructors.get(i);
+			result += 
+				"<div class=\"row\">" +
+					"<span class=\"col-md-3\">" + instructor.getName() + "</span>" +
+				"</div>";
+		}
+
+		result += "</div>";
+
+		return result;
+	}
+
+	public static Result getInstructorsForCourseTableRoute(String name)
+	{
+		try
+		{
+			return ok(getInstructorsForCourseTable(name));
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			return internalServerError("");
+		}
+	}
 }
 

@@ -781,21 +781,22 @@ public class Application extends Controller
 			return internalServerError("");
 		}
 	}
-	public static List<Instructor> getInstructorsForCourseInternal(String name) throws SQLException
+	public static List<Instructor> getInstructorsForCourseInternal(String subject, String number) throws SQLException
 	{
 		List<Instructor> instructors = new ArrayList<Instructor>();
 		Connection conn = DB.getConnection();
 		PreparedStatement statement = conn.prepareStatement(
 			"SELECT DISTINCT " +
-				"I.name AS Iname, " +
-			"FROM Instructors I" +
-				"JOIN Sections S" + 
-					"ON S.instructor = I.name" +
-				"JOIN Course_Offered_In_Term COIT" +
-					"ON COIT.subject = S.subject AND COIT.num = S.num" +
+				"I.name AS Iname " +
+			"FROM Instructors I " +
+				"JOIN Sections S " + 
+					"ON S.instructor = I.name " +
+				"JOIN Course_Offered_In_Term COIT " +
+					"ON COIT.subject = S.subject AND COIT.num = S.num " +
 			"WHERE COIT.subject = ? AND COIT.num = ?");
 			
-		statement.setString(1, name);
+		statement.setString(1, subject);
+		statement.setString(2, number);
 
 		ResultSet rs = statement.executeQuery();
 		while (rs.next())
@@ -809,11 +810,11 @@ public class Application extends Controller
 		return instructors;
 	}
 
-	public static Result getInstructorsForCourse(String name)
+	public static Result getInstructorsForCourse(String subject, String number)
 	{
 		try
 		{
-			return ok(Json.toJson(getInstructorsForCourseInternal(name)));
+			return ok(Json.toJson(getInstructorsForCourseInternal(subject, number)));
 		}
 		catch (SQLException e)
 		{
@@ -822,7 +823,7 @@ public class Application extends Controller
 		}
 	}
 
-	public static String getInstructorsForCourseTable(String name) throws SQLException
+	public static String getInstructorsForCourseTable(String subject, String number) throws SQLException
 	{
 		String result =
 			"<div class=\"grid\">" +
@@ -830,7 +831,7 @@ public class Application extends Controller
 					"<div class=\"col-md-3\"><h4>Instructors</h4></div>" +
 				"</div>";
 		
-		List<Instructor> instructors = getInstructorsForCourseInternal(name);
+		List<Instructor> instructors = getInstructorsForCourseInternal(subject, number);
 		for (int i = 0; i < instructors.size(); i++)
 		{
 			Instructor instructor = instructors.get(i);
@@ -845,11 +846,11 @@ public class Application extends Controller
 		return result;
 	}
 
-	public static Result getInstructorsForCourseTableRoute(String name)
+	public static Result getInstructorsForCourseTableRoute(String subject, String number)
 	{
 		try
 		{
-			return ok(getInstructorsForCourseTable(name));
+			return ok(getInstructorsForCourseTable(subject, number));
 		}
 		catch (SQLException e)
 		{

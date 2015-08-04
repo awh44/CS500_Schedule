@@ -100,12 +100,12 @@ function find_courses_for_instructor_click()
 function find_instructors_for_course_click()
 {
 	$("#instr_results").empty();
-	var name = $("#instr_subject").val();
+	var num = $("#instr_num").val().split(" ");
 	$.ajax
 	(
 		{
 			"type": "GET",
-			"data": { "name": name },
+			"data": { "subject": num[0], "number": num[1] },
 			"url": "getInstructorsForCourseTableRoute",
 			"success": function (data)
 			{

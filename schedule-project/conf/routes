@@ -29,5 +29,7 @@ GET     /getCoursesForInstructorTableRoute controllers.Application.getCoursesFor
 
 GET     /getInstructorsForCourseTableRoute controllers.Application.getInstructorsForCourseTableRoute(subject: String, number: String)
 
+GET     /getInstructorsForCourseByNameTableRoute controllers.Application.getInstructorsForCourseByNameTableRoute(name: String)
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

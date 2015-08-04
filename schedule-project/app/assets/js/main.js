@@ -118,3 +118,47 @@ function find_instructors_for_course_click()
 		}
 	);
 }
+
+function find_instructors_for_course_click()
+{
+	$("#instr_results").empty();
+	var num = $("#instr_num").val().split(" ");
+	$.ajax
+	(
+		{
+			"type": "GET",
+			"data": { "subject": num[0], "number": num[1] },
+			"url": "getInstructorsForCourseTableRoute",
+			"success": function (data)
+			{
+				$("#instr_results").append(data);
+			},
+			"error": function(jqXHR, textStatus, data)
+			{
+				alert(data);
+			}
+		}
+	);
+}
+
+function find_instructors_for_course_by_name_click()
+{
+	$("#instr_results_by_name").empty();
+	var name = $("#instr_course_name").val();
+	$.ajax
+	(
+		{
+			"type": "GET",
+			"data": { "name": name },
+			"url": "getInstructorsForCourseByNameTableRoute",
+			"success": function (data)
+			{
+				$("#instr_results_by_name").append(data);
+			},
+			"error": function(jqXHR, textStatus, data)
+			{
+				alert(data);
+			}
+		}
+	);
+}

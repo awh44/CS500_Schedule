@@ -807,6 +807,38 @@ public class Application extends Controller
 			));
 		}
 
+		rs.close();
+		statement.close();
+		conn.close();
+
+		return instructors;
+	}
+
+	public static List<Instructor> getInstructorsForCourseByName(String course_name) throws SQLException
+	{
+		List<Instructor> instructors = new ArrayList<Instructor>();
+		Connection conn = DB.getConnection();
+		PreparedStatement statement = conn.prepareStatement(
+			"SELECT DISTINCT " +
+				"I.name AS Iname " +
+			"FROM Instructors I, Sections S, Courses_Have CH " +
+			"WHERE " +
+				"I.name = S.instructor AND CH.abbr = S.subject AND CH.num = S.num AND CH.name = ? ");
+		statement.setString(1, course_name);
+
+		ResultSet rs = statement.executeQuery();
+		while (rs.next())
+		{
+			instructors.add(new Instructor
+			(
+				rs.getString("Iname")
+			));
+		}
+		
+		rs.close();
+		statement.close();
+		conn.close();
+
 		return instructors;
 	}
 
@@ -823,7 +855,7 @@ public class Application extends Controller
 		}
 	}
 
-	public static String getInstructorsForCourseTable(String subject, String number) throws SQLException
+	public static String buildInstructorsForCourseTable(List<Instructor> instructors) throws SQLException
 	{
 		String result =
 			"<div class=\"grid\">" +
@@ -831,7 +863,6 @@ public class Application extends Controller
 					"<div class=\"col-md-3\"><h4>Instructors</h4></div>" +
 				"</div>";
 		
-		List<Instructor> instructors = getInstructorsForCourseInternal(subject, number);
 		for (int i = 0; i < instructors.size(); i++)
 		{
 			Instructor instructor = instructors.get(i);
@@ -846,6 +877,16 @@ public class Application extends Controller
 		return result;
 	}
 
+	public static String getInstructorsForCourseTable(String subject, String number) throws SQLException
+	{
+		return buildInstructorsForCourseTable(getInstructorsForCourseInternal(subject, number));
+	}
+
+	public static String getInstructorsForCourseByNameTable(String name) throws SQLException
+	{
+		return buildInstructorsForCourseTable(getInstructorsForCourseByName(name));
+	}
+
 	public static Result getInstructorsForCourseTableRoute(String subject, String number)
 	{
 		try
@@ -858,5 +899,17 @@ public class Application extends Controller
 			return internalServerError("");
 		}
 	}
-}
 
+	public static Result getInstructorsForCourseByNameTableRoute(String name)
+	{
+		try
+		{
+			return ok(getInstructorsForCourseByNameTable(name));
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			return internalServerError("");
+		}
+	}
+}

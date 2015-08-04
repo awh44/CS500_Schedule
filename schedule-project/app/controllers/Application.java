@@ -176,9 +176,9 @@ public class Application extends Controller
 		return ok(result);
 	}
 
-	private static List<String> getInstructorsInternal() throws SQLException
+	private static List<Instructor> getInstructorsInternal() throws SQLException
 	{
-		List<String> instructors = new ArrayList<String>();
+		List<Instructor> instructors = new ArrayList<Instructor>();
 		Connection conn = DB.getConnection();
 		PreparedStatement statement = conn.prepareStatement(
 			"SELECT name " +
@@ -187,7 +187,7 @@ public class Application extends Controller
 		ResultSet rs = statement.executeQuery();
 		while (rs.next())
 		{
-			instructors.add(rs.getString("name"));
+			instructors.add(new Instructor(rs.getString("name")));
 		}
 
 		rs.close();
@@ -212,10 +212,10 @@ public class Application extends Controller
 	public static String getInstructorsOptions() throws SQLException
 	{
 		String result = "";
-		List<String> instructors = getInstructorsInternal();
+		List<Instructor> instructors = getInstructorsInternal();
 		for (int i = 0; i < instructors.size(); i++)
 		{
-			String instructor = instructors.get(i);
+			String instructor = instructors.get(i).getName();
 			result += "<option value=\"" + instructor + "\">" + instructor + "</option>";
 		}
 
@@ -235,6 +235,65 @@ public class Application extends Controller
 		}
 	}
 
+	private static List<Campus> getCampusesInternal() throws SQLException
+	{
+		List<Campus> campuses = new ArrayList<Campus>();
+		Connection conn = DB.getConnection();
+		PreparedStatement statement = conn.prepareStatement(
+			"SELECT name " +
+			"FROM Campuses " +
+			"ORDER BY name");
+		ResultSet rs = statement.executeQuery();
+		while (rs.next())
+		{
+			campuses.add(new Campus(rs.getString("name")));
+		}
+
+		rs.close();
+		statement.close();
+		conn.close();
+		return campuses;
+	}
+
+	public static Result getCampuses()
+	{
+		try
+		{
+			return ok(Json.toJson(getCampusesInternal()));
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			return internalServerError("[]");
+		}
+	}
+
+	public static String getCampusesOptions() throws SQLException
+	{
+		String result = "";
+		List<Campus> campuses = getCampusesInternal();
+		for (int i = 0; i < campuses.size(); i++)
+		{
+			String campus = campuses.get(i).getName();
+			result += "<option value=\"" + campus + "\">" + campus + "</option>";
+		}
+
+		return result;
+	}
+
+	public static Html getCampusesOptionsAsHtml()
+	{
+		try
+		{
+			return Html.apply(getCampusesOptions());
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			return Html.apply("");
+		}
+	}
+	
 	public static Html getNumberOptions()
 	{
 		String result = "";

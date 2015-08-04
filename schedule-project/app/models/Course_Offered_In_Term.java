@@ -76,8 +76,7 @@ public class Course_Offered_In_Term extends Model
 	{
 		return year_;
 	}
-
-	/*
+/*
 	public int compareTo(Course_Offered_In_Term other)
 	{
 		if (year_ < other.year_)
@@ -88,22 +87,79 @@ public class Course_Offered_In_Term extends Model
 
 		if (season_.equals(other.season_))
 		{
-			return 0
+			if (term_type_.equals(other.term_type_))
+			{
+				return 0;
+			}
+			else
+			{
+				//quarters will come before semesters
+				return term_type_.equals("Quarter") ? -1 : 1;
+			}
+					
 		}
 
 		//same year and seasons aren't the same - fall always comes last,
 		//so know that the this object must come after the current
 		if (season_.equals("Fall"))
-			return 1;
+		{
+			switch (other.season_)
+			{
+				case "Winter":
+				case "Spring":
+				case "Summer":
+					return 1;
+					break;
+				default:
+					break;
+			}
+		}
 
-		if (other.season_.equals("Winter"))
-			return 1;
+		if (season_.equals("Winter"))
+		{
+			switch (other.season_)
+			{
+				case "Spring":
+				case "Summer":
+				case "Fall":
+					return -1;
+				default:
+					break;
+			}
+		}
 
-		if (season_.equals("Summer"))
-			return 1;
+		if (season_.equals("Spring"))
+		{
+			switch (other.season_)
+			{
+				case "Winter":
+					return 1;
+				case "Summer":
+				case "Fall":
+					return -1;
+				default:
+					break;
+			}
+		}
 
-		return -1;
-	}*/
+		//season must equal summer at this point,
+		//unless given bad data
+		//if (season_.equals("Summer"))
+		{
+			switch (other.season_)
+			{
+				case "Winter":
+				case "Spring":
+					return 1;
+				case "Fall":
+					return -1;
+				default:
+					break;
+			}
+		}
+
+	}
+*/
 
 	@Override
 	public int hashCode()

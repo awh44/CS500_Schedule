@@ -19,12 +19,12 @@ public class Campus extends Model
 		setName(name);
 	}
 
-	private void setName(String name)
+	public void setName(String name)
 	{
 		name_ = name;
 	}
 
-	private String getName()
+	public String getName()
 	{
 		return name_;
 	}

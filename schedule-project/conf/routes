@@ -11,6 +11,8 @@ GET     /getCoursesForSubject       controllers.Application.getCoursesForSubject
 
 GET     /getInstructors             controllers.Application.getInstructors()
 
+GET     /getCampuses                controllers.Application.getCampuses()
+
 GET     /getCoursesForInstructor    controllers.Application.getCoursesForInstructor(name: String)
 
 GET     /getCoursesForSubjectOptionsRoute controllers.Application.getCoursesForSubjectOptionsRoute(abbr: String)

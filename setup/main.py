@@ -39,6 +39,7 @@ def main(argv):
 	for tries in range(10):
 		try:	
 			parser.parse()
+			break
 		except Exception, err:
 			traceback.print_exc()
 			parser.cleanup()

@@ -176,9 +176,9 @@ public class Application extends Controller
 		return ok(result);
 	}
 
-	private static List<String> getInstructorsInternal() throws SQLException
+	private static List<Instructor> getInstructorsInternal() throws SQLException
 	{
-		List<String> instructors = new ArrayList<String>();
+		List<Instructor> instructors = new ArrayList<Instructor>();
 		Connection conn = DB.getConnection();
 		PreparedStatement statement = conn.prepareStatement(
 			"SELECT name " +
@@ -187,7 +187,7 @@ public class Application extends Controller
 		ResultSet rs = statement.executeQuery();
 		while (rs.next())
 		{
-			instructors.add(rs.getString("name"));
+			instructors.add(new Instructor(rs.getString("name")));
 		}
 
 		rs.close();
@@ -212,10 +212,10 @@ public class Application extends Controller
 	public static String getInstructorsOptions() throws SQLException
 	{
 		String result = "";
-		List<String> instructors = getInstructorsInternal();
+		List<Instructor> instructors = getInstructorsInternal();
 		for (int i = 0; i < instructors.size(); i++)
 		{
-			String instructor = instructors.get(i);
+			String instructor = instructors.get(i).getName();
 			result += "<option value=\"" + instructor + "\">" + instructor + "</option>";
 		}
 
@@ -235,6 +235,65 @@ public class Application extends Controller
 		}
 	}
 
+	private static List<Campus> getCampusesInternal() throws SQLException
+	{
+		List<Campus> campuses = new ArrayList<Campus>();
+		Connection conn = DB.getConnection();
+		PreparedStatement statement = conn.prepareStatement(
+			"SELECT name " +
+			"FROM Campuses " +
+			"ORDER BY name");
+		ResultSet rs = statement.executeQuery();
+		while (rs.next())
+		{
+			campuses.add(new Campus(rs.getString("name")));
+		}
+
+		rs.close();
+		statement.close();
+		conn.close();
+		return campuses;
+	}
+
+	public static Result getCampuses()
+	{
+		try
+		{
+			return ok(Json.toJson(getCampusesInternal()));
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			return internalServerError("[]");
+		}
+	}
+
+	public static String getCampusesOptions() throws SQLException
+	{
+		String result = "";
+		List<Campus> campuses = getCampusesInternal();
+		for (int i = 0; i < campuses.size(); i++)
+		{
+			String campus = campuses.get(i).getName();
+			result += "<option value=\"" + campus + "\">" + campus + "</option>";
+		}
+
+		return result;
+	}
+
+	public static Html getCampusesOptionsAsHtml()
+	{
+		try
+		{
+			return Html.apply(getCampusesOptions());
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			return Html.apply("");
+		}
+	}
+	
 	public static Html getNumberOptions()
 	{
 		String result = "";
@@ -722,5 +781,135 @@ public class Application extends Controller
 			return internalServerError("");
 		}
 	}
-}
+	public static List<Instructor> getInstructorsForCourseInternal(String subject, String number) throws SQLException
+	{
+		List<Instructor> instructors = new ArrayList<Instructor>();
+		Connection conn = DB.getConnection();
+		PreparedStatement statement = conn.prepareStatement(
+			"SELECT DISTINCT " +
+				"I.name AS Iname " +
+			"FROM Instructors I " +
+				"JOIN Sections S " + 
+					"ON S.instructor = I.name " +
+				"JOIN Course_Offered_In_Term COIT " +
+					"ON COIT.subject = S.subject AND COIT.num = S.num " +
+			"WHERE COIT.subject = ? AND COIT.num = ?");
+			
+		statement.setString(1, subject);
+		statement.setString(2, number);
 
+		ResultSet rs = statement.executeQuery();
+		while (rs.next())
+		{
+			instructors.add(new Instructor
+			(
+				rs.getString("Iname")
+			));
+		}
+
+		rs.close();
+		statement.close();
+		conn.close();
+
+		return instructors;
+	}
+
+	public static List<Instructor> getInstructorsForCourseByName(String course_name) throws SQLException
+	{
+		List<Instructor> instructors = new ArrayList<Instructor>();
+		Connection conn = DB.getConnection();
+		PreparedStatement statement = conn.prepareStatement(
+			"SELECT DISTINCT " +
+				"I.name AS Iname " +
+			"FROM Instructors I, Sections S, Courses_Have CH " +
+			"WHERE " +
+				"I.name = S.instructor AND CH.abbr = S.subject AND CH.num = S.num AND CH.name = ? ");
+		statement.setString(1, course_name);
+
+		ResultSet rs = statement.executeQuery();
+		while (rs.next())
+		{
+			instructors.add(new Instructor
+			(
+				rs.getString("Iname")
+			));
+		}
+		
+		rs.close();
+		statement.close();
+		conn.close();
+
+		return instructors;
+	}
+
+	public static Result getInstructorsForCourse(String subject, String number)
+	{
+		try
+		{
+			return ok(Json.toJson(getInstructorsForCourseInternal(subject, number)));
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			return internalServerError("[]");
+		}
+	}
+
+	public static String buildInstructorsForCourseTable(List<Instructor> instructors) throws SQLException
+	{
+		String result =
+			"<div class=\"grid\">" +
+				"<div class=\"row\">" +
+					"<div class=\"col-md-3\"><h4>Instructors</h4></div>" +
+				"</div>";
+		
+		for (int i = 0; i < instructors.size(); i++)
+		{
+			Instructor instructor = instructors.get(i);
+			result += 
+				"<div class=\"row\">" +
+					"<span class=\"col-md-3\">" + instructor.getName() + "</span>" +
+				"</div>";
+		}
+
+		result += "</div>";
+
+		return result;
+	}
+
+	public static String getInstructorsForCourseTable(String subject, String number) throws SQLException
+	{
+		return buildInstructorsForCourseTable(getInstructorsForCourseInternal(subject, number));
+	}
+
+	public static String getInstructorsForCourseByNameTable(String name) throws SQLException
+	{
+		return buildInstructorsForCourseTable(getInstructorsForCourseByName(name));
+	}
+
+	public static Result getInstructorsForCourseTableRoute(String subject, String number)
+	{
+		try
+		{
+			return ok(getInstructorsForCourseTable(subject, number));
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			return internalServerError("");
+		}
+	}
+
+	public static Result getInstructorsForCourseByNameTableRoute(String name)
+	{
+		try
+		{
+			return ok(getInstructorsForCourseByNameTable(name));
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			return internalServerError("");
+		}
+	}
+}

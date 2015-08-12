@@ -57,6 +57,56 @@
 			</form>
 		</div>
 		<div class="filter-set container">
+			<h3>Find Professors Who Have Taught a Course</h3>
+			<form name="instructorsForCourse">
+				<div class="row">
+					<div class="col-md-6">
+						<h4>Subject</h4>
+					</div>
+					<div class="col-md-6">
+						<h4>Course</h4>
+					</div>
+				</div>
+				<div class="row">
+					<select id="instr_subject" class="col-md-6"
+						name="subject" onchange="instr_subject_onchange()">
+						@subject_options
+					</select>
+					<select id="instr_num" class="col-md-6" name="number">
+					</select>
+				</div>
+				<div class="row">
+					<input class="col-md-4" type="button" value="Find All"
+					onclick="find_instructors_for_course_click();"/>
+				</div>
+				<div id="instr_results" class="results-set">
+				</div>
+			</form>
+		</div>
+		<div class="filter-set container">
+			<h3>Find Professors Who Have Taught a Course</h3>
+			<form name="instructorsForCourseName">
+				<div class="row">
+					<div class="col-md-12">
+						<h4>Course Name</h4>
+					</div>
+				</div>
+				<div class="row">
+					<input type="text" id="instr_course_name" class="col-md-12" name="course_name">
+					</select>
+				</div>
+				<div class="row">
+					<input class="col-md-4" type="button" value="Find All" onclick="find_instructors_for_course_by_name_click();"/>
+				</div>
+				<div id="instr_results_by_name" class="results-set">
+				</div>
+			</form>
+		</div>
+
+
+		</div>
+		<script>/*
+		<div class="filter-set container">
 			<h3>Find Courses Offered in a Quarter</h3>
 			<form name="coursesInQuarter">
 				<div class="row">
@@ -227,6 +277,7 @@
 				</div>
 			</form>
 		</div>
+		*/<script>
 </body>
 <!--
     <head>

@@ -75,8 +75,12 @@ WHERE
 		if offeredinobj == None:
 			self.c.execute("INSERT INTO Course_Offered_In_Term(subject, num, season, term_type, year) VALUES(?, ?, ?, ?, ?)", (subject, num) + quarter_id)
 
-	def insert_section(self, CRN, section, capacity, enrolled, abbr, course_number, instructor, quarter_id, campus):
-		self.c.execute("INSERT INTO Sections(CRN, subject, num, season, term_type, year, section_id, capacity, enrolled, instructor, campus) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (CRN, abbr, course_number,) + quarter_id + (section, capacity, enrolled, instructor, campus))
+	def ensure_section(self, CRN, section, capacity, enrolled, abbr, course_number, instructor, quarter_id, campus):
+		key = (CRN, abbr, course_number) + quarter_id
+		sectionobj = self.c.execute("SELECT * FROM Sections WHERE CRN = ? AND subject = ? AND num = ? AND season = ? AND term_type = ? AND year = ?", key).fetchone()
+		if sectionobj == None:
+			print "Missed " + CRN + "(" + abbr + " " + course_number + ") in " + str(quarter_id)
+			self.c.execute("INSERT INTO Sections(CRN, subject, num, season, term_type, year, section_id, capacity, enrolled, instructor, campus) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", key + (section, capacity, enrolled, instructor, campus))
 
 	def get_sections_for_subject_in_term(self, subject, quarter_id, use_abbr = False):
 		to_check = "abbr" if use_abbr else "subject"

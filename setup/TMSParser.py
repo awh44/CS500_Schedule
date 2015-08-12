@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+import time as sys_time
+
 from SiteParser import SiteParser
 
 from selenium.webdriver.common.keys import Keys
@@ -28,11 +30,18 @@ class TMSParser(SiteParser):
 			return credits.split(" ")[1]
 
 		return "0.0"
+
+	def all_sections_checked(self, sections, abbr, quarter_id):
+		checkedobj = self.c.execute("SELECT COUNT(*) FROM Sections WHERE subject = ? AND season = ? AND term_type = ? AND year = ?", (abbr,) + quarter_id)
+		checked = checkedobj.fetchone()[0]
+		return checked == len(sections)
+		
 		
 	def parse(self):
 		SiteParser.parse(self)
 		self.driver.get("https://drexel.edu/webtms")
 		self.check_all_quarters();
+		print "I AM DONE"
 		self.cleanup()
 	
 	def check_all_quarters(self):
@@ -54,18 +63,19 @@ class TMSParser(SiteParser):
 			subjects = self.driver.find_elements_by_xpath("//*[local-name()='table' and @class='collegePanel']//*[local-name()='a']")
 			for subject in subjects:
 				subject_name = subject.text
-				if self.get_sections_for_subject_in_term(subject_name, quarter_id).fetchone() == None:
-					self.ensure_subject(subject_name)
-					self.open_link_in_new_tab(subject)
-					self.check_all_courses(subject_name, quarter_id)
-					self.close_tab()
-					self.conn.commit()
+				self.ensure_subject(subject_name)
+				self.open_link_in_new_tab(subject)
+				sys_time.sleep(.4)
+				self.check_all_courses(subject_name, quarter_id)
+				self.close_tab()
+				self.conn.commit()
 			self.close_tab()
 
 	def check_all_courses(self, subject_name, quarter_id):
 		sections = self.driver.find_elements_by_xpath("//*[local-name()='tr' and contains(@class, 'tableHeader')]/following-sibling::*[local-name()='tr' and (@class='even' or @class='odd')]")
 		abbr = sections[0].find_element_by_xpath("./*[local-name()='td'][1]").text
-		self.check_all_sections(sections, abbr, subject_name, quarter_id)
+		if not self.all_sections_checked(sections, abbr, quarter_id):	
+			self.check_all_sections(sections, abbr, subject_name, quarter_id)
 
 	def check_all_sections(self, sections, abbr, subject_name, quarter_id):
 		for section in sections:
@@ -91,7 +101,7 @@ class TMSParser(SiteParser):
 			self.ensure_course_offered_in_term(abbr, course_number, quarter_id)
 			campus = self.get_actual_campus(campus)
 
-			self.insert_section(CRN, section, capacity, enrolled, abbr, course_number, instructor, quarter_id, campus)
+			self.ensure_section(CRN, section, capacity, enrolled, abbr, course_number, instructor, quarter_id, campus)
 			self.check_all_times_for_section(CRN, abbr, course_number, quarter_id)
 			self.close_tab()
 

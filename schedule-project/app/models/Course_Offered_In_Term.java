@@ -8,6 +8,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import java.util.List;
+import java.util.ArrayList;
+
 @Entity
 @Table(name = "Course_Offered_In_Term")
 public class Course_Offered_In_Term extends Model
@@ -17,6 +20,7 @@ public class Course_Offered_In_Term extends Model
 	private String season_;
 	private String term_type_;
 	private int year_;
+	private List<Section> sections_;
 
 	public Course_Offered_In_Term(String subject, String num, String season, String term_type, int year)
 	{
@@ -25,6 +29,7 @@ public class Course_Offered_In_Term extends Model
 		setSeason(season);
 		setType(term_type);
 		setYear(year);
+		sections_ = new ArrayList<Section>();
 	}
 
 	public void setSubject(String subject)
@@ -75,6 +80,21 @@ public class Course_Offered_In_Term extends Model
 	public int getYear()
 	{
 		return year_;
+	}
+
+	public void addSection(Section section)
+	{
+		sections_.add(section);
+	}
+
+	public Section getSection(int i)
+	{
+		return sections_.get(i);
+	}
+
+	public List<Section> getSections()
+	{
+		return sections_;
 	}
 /*
 	public int compareTo(Course_Offered_In_Term other)

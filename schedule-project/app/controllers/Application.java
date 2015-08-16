@@ -380,9 +380,9 @@ public class Application extends Controller
 		return "";
 	}
 
-	private static Map<Course_Offered_In_Term, List<Section>> getSectionsForCourseInternal(String subject, String num) throws SQLException
+	private static List<Course_Offered_In_Term> getSectionsForCourseInternal(String subject, String num) throws SQLException
 	{
-		Map<Course_Offered_In_Term, List<Section>> sections = new HashMap<Course_Offered_In_Term, List<Section>>();
+		List<Course_Offered_In_Term> sections = new ArrayList<Course_Offered_In_Term>();
 		Connection conn = DB.getConnection();
 		PreparedStatement statement = conn.prepareStatement(
 			"SELECT " +
@@ -424,7 +424,7 @@ public class Application extends Controller
 			if (!season.equals(last_season) || !term_type.equals(last_type) || year != last_year)
 			{
 				coit = new Course_Offered_In_Term(subject, num, season, term_type, year);
-				sections.put(coit, new ArrayList<Section>());
+				sections.add(coit);
 			}
 
 			Integer CRN = rs.getInt("SCRN");
@@ -447,7 +447,7 @@ public class Application extends Controller
 					meets_at
 				);
 			
-				sections.get(coit).add(section);
+				sections.get(sections.size() - 1).addSection(section);
 			}
 
 			last_season = season;
@@ -477,8 +477,8 @@ public class Application extends Controller
 	public static String getSectionsForCourseTables(String subject, String num) throws SQLException
 	{
 		String result = "";
-		Map<Course_Offered_In_Term, List<Section>> coit_sections = getSectionsForCourseInternal(subject, num);
-		for (Course_Offered_In_Term coit : coit_sections.keySet())
+		List<Course_Offered_In_Term> coit_sections = getSectionsForCourseInternal(subject, num);
+		for (Course_Offered_In_Term coit : coit_sections)
 		{
 			String quarter = coit.getSeason() + " " + coit.getType() + " " + coit.getYear();
 			result += "<div class=\"quarter-table\">";
@@ -495,7 +495,7 @@ public class Application extends Controller
 						 "<h4 class=\"col-md-2\">Meets At</h4>" +
 					"</div>";
 
-			List<Section> sections = coit_sections.get(coit);
+			List<Section> sections = coit.getSections();
 			if (sections.size() > 0)
 			{
 				for (int i = 0; i < sections.size(); i++)

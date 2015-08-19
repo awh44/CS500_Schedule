@@ -157,7 +157,7 @@ WHERE
 				campus = self.get_actual_campus(row.find_element_by_xpath(".//*[local-name()='td'][6]").text)
 				capacity = row.find_element_by_xpath(".//*[local-name()='td'][11]").text
 				enrolled = row.find_element_by_xpath(".//*[local-name()='td'][12]").text
-				self.insert_section(CRN, section, capacity, enrolled, abbr, num, instructor, quarter_id, campus)
+				self.ensure_section(CRN, section, capacity, enrolled, abbr, num, instructor, quarter_id, campus)
 
 			self.ensure_times_for_section(CRN, abbr, num, quarter_id, row)
 					

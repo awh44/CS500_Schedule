@@ -79,7 +79,6 @@ WHERE
 		key = (CRN, abbr, course_number) + quarter_id
 		sectionobj = self.c.execute("SELECT * FROM Sections WHERE CRN = ? AND subject = ? AND num = ? AND season = ? AND term_type = ? AND year = ?", key).fetchone()
 		if sectionobj == None:
-			print "Missed " + CRN + "(" + abbr + " " + course_number + ") in " + str(quarter_id)
 			self.c.execute("INSERT INTO Sections(CRN, subject, num, season, term_type, year, section_id, capacity, enrolled, instructor, campus) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", key + (section, capacity, enrolled, instructor, campus))
 
 	def get_sections_for_subject_in_term(self, subject, quarter_id, use_abbr = False):

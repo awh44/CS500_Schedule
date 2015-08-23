@@ -11,282 +11,270 @@
 	<link rel="stylesheet" href='@routes.Assets.versioned("css/main.css")'>
 </head>
 <body>
-		<div class="filter-set container">
-			<h3>Find Quarters a Course Has Been Offered</h3>
-			<form name="quartersForCourse">
-				<div class="row">
-					<div class="col-md-6">
-						<h4>Subject</h4>
-					</div>
-					<div class="col-md-6">
-						<h4>Course</h4>
-					</div>
+	<div class="filter-set container">
+		<h3>Find Quarters a Course Has Been Offered</h3>
+		<form name="quartersForCourse">
+			<div class="row">
+				<div class="col-md-6">
+					<h4>Subject</h4>
 				</div>
-				<div class="row">
-					<select id="quarters_subject" class="col-md-6" name="subject" onchange="quarters_subject_onchange()">
-						@subject_options
-					</select>
-					<select id="quarters_num" class="col-md-6" name="number">
-					</select>
+				<div class="col-md-6">
+					<h4>Course</h4>
 				</div>
-				<div class="row">
-					<input class="col-md-4" type="button" value="Find All" onclick="find_all_sections_click();"/>
-					<input class="col-md-4" type="button" value="Find Most Recent per Season" onclick="find_most_recent_per_season_click();"/>
-					<input class="col-md-4" type="button" value="Find Earliest per Season" onclick="find_earliest_per_season_click();"/>
+			</div>
+			<div class="row">
+				<select id="quarters_subject" class="col-md-6" name="subject" onchange="quarters_subject_onchange()">
+					@subject_options
+				</select>
+				<select id="quarters_num" class="col-md-6" name="number">
+				</select>
+			</div>
+			<div class="row">
+				<input class="col-md-4" type="button" value="Find All" onclick="find_all_sections_click();"/>
+				<input class="col-md-4" type="button" value="Find Most Recent per Season" onclick="find_most_recent_per_season_click();"/>
+				<input class="col-md-4" type="button" value="Find Earliest per Season" onclick="find_earliest_per_season_click();"/>
+			</div>
+			<div id="quarters_results" class="results-set">
+			</div>
+		</form>
+	</div>
+	<div class="filter-set container">
+		<h3>Find All Courses a Professor Has Taught</h3>
+		<form name="coursesForInstructor">
+			<div class="row">
+				<div class="col-md-4">
+					<h4>Instructor</h4>
 				</div>
-				<div id="quarters_results" class="results-set">
+			</div>
+			<div class="row">
+				<select id="instructors_instructor" class="col-md-4" name="instructor">
+					@instructor_options;
+				</select>
+				<input class="col-md-4" type="button" value="Find" onclick="find_courses_for_instructor_click();"/>
+			</div>
+			<div id="instructors_results" class="results-set">
+			</div>
+		</form>
+	</div>
+	<div class="filter-set container">
+		<h3>Find Professors Who Have Taught a Course</h3>
+		<form name="instructorsForCourse">
+			<div class="row">
+				<div class="col-md-6">
+					<h4>Subject</h4>
 				</div>
-			</form>
-		</div>
-		<div class="filter-set container">
-			<h3>Find All Courses a Professor Has Taught</h3>
-			<form name="coursesForInstructor">
-				<div class="row">
-					<div class="col-md-4">
-						<h4>Instructor</h4>
-					</div>
+				<div class="col-md-6">
+					<h4>Course</h4>
 				</div>
-				<div class="row">
-					<select id="instructors_instructor" class="col-md-4" name="instructor">
-						@instructor_options;
-					</select>
-					<input class="col-md-4" type="button" value="Find" onclick="find_courses_for_instructor_click();"/>
+			</div>
+			<div class="row">
+				<select id="instr_subject" class="col-md-6"
+					name="subject" onchange="instr_subject_onchange()">
+					@subject_options
+				</select>
+				<select id="instr_num" class="col-md-6" name="number">
+				</select>
+			</div>
+			<div class="row">
+				<input class="col-md-4" type="button" value="Find All" onclick="find_instructors_for_course_click();"/>
+			</div>
+			<div id="instr_results" class="results-set">
+			</div>
+		</form>
+	</div>
+	<div class="filter-set container">
+		<h3>Find Professors Who Have Taught a Course</h3>
+		<form name="instructorsForCourseName">
+			<div class="row">
+				<div class="col-md-12">
+					<h4>Course Name</h4>
 				</div>
-				<div id="instructors_results" class="results-set">
-				</div>
-			</form>
-		</div>
-		<div class="filter-set container">
-			<h3>Find Professors Who Have Taught a Course</h3>
-			<form name="instructorsForCourse">
-				<div class="row">
-					<div class="col-md-6">
-						<h4>Subject</h4>
-					</div>
-					<div class="col-md-6">
-						<h4>Course</h4>
-					</div>
-				</div>
-				<div class="row">
-					<select id="instr_subject" class="col-md-6"
-						name="subject" onchange="instr_subject_onchange()">
-						@subject_options
-					</select>
-					<select id="instr_num" class="col-md-6" name="number">
-					</select>
-				</div>
-				<div class="row">
-					<input class="col-md-4" type="button" value="Find All"
-					onclick="find_instructors_for_course_click();"/>
-				</div>
-				<div id="instr_results" class="results-set">
-				</div>
-			</form>
-		</div>
-		<div class="filter-set container">
-			<h3>Find Professors Who Have Taught a Course</h3>
-			<form name="instructorsForCourseName">
-				<div class="row">
-					<div class="col-md-12">
-						<h4>Course Name</h4>
-					</div>
-				</div>
-				<div class="row">
-					<input type="text" id="instr_course_name" class="col-md-12" name="course_name">
-					</select>
-				</div>
-				<div class="row">
-					<input class="col-md-4" type="button" value="Find All" onclick="find_instructors_for_course_by_name_click();"/>
-				</div>
-				<div id="instr_results_by_name" class="results-set">
-				</div>
-			</form>
-		</div>
+			</div>
+			<div class="row">
+				<input type="text" id="instr_course_name" class="col-md-12" name="course_name">
+				</select>
+			</div>
+			<div class="row">
+				<input class="col-md-4" type="button" value="Find All" onclick="find_instructors_for_course_by_name_click();"/>
+			</div>
+			<div id="instr_results_by_name" class="results-set">
+			</div>
+		</form>
+	</div>
 
-
-		</div>
-		<script>/*
-		<div class="filter-set container">
-			<h3>Find Courses Offered in a Quarter</h3>
-			<form name="coursesInQuarter">
-				<div class="row">
-					<div class="col-md-2">
-						<h4>Subject</h4>
-					</div>
-					<div class="col-md-2">
-						<h4>Course Number</h4>
-					</div>
-					<div class="col-md-2">
-						<h4>Quarter</h4>
-					</div>
-					<div class="col-md-2">
-						<h4>Credits</h4>
-					</div>
-					<div class="col-md-2">
-						<h4>Instructor</h4>
-					</div>
-					<div class="col-md-2">
-						<h4>Campus</h4>
-					</div>
+	<div class="filter-set container">
+		<h3>Find Courses Offered in a Quarter</h3>
+		<form name="coursesInQuarter">
+			<div class="row">
+				<div class="col-md-2">
+					<h4>Subject</h4>
 				</div>
-				<div class="row">
-					<select class="col-md-2" multiple name="subject">
-						@subject_options
-					</select>
-					<select class="col-md-1" name="number_operator">
-						@operator_options
-					</select>
-					<select class="col-md-1" name="number">
-						@number_options
-					</select>
-					<select class="col-md-2" multiple name="quarter">
-						@quarter_options
-					</select>
-					<select class="col-md-1" name="credits_operator">
-						@operator_options
-					</select>
-					<select class="col-md-1" name="credits">
-						@credit_options
-					</select>
-					<select class="col-md-2" name="instructor">
-						@instructor_options
-					</select>
-					<select class="col-md-2" name="campus">
-						@campus_options
-					</select>
+				<div class="col-md-2">
+					<h4>Course Number</h4>
 				</div>
-				<div class="row">
-					<div class="col-md-4">
-						<h4>Days</h4>
-					</div>
-					<div class="col-md-2">
-						<h4>Starts</h4>
-					</div>
-					<div class="col-md-2">
-						<h4>Time</h4>
-					</div>
-					<div class="col-md-2">
-						<h4>Ends</h4>
-					</div>
-					<div class="col-md-2">
-						<h4>Time</h4>
-					</div>
+				<div class="col-md-2">
+					<h4>Quarter</h4>
 				</div>
-				<div class="row">
-					<div class="col-md-4">
-						Monday
-					</div>
-					<select class="col-md-2" name="monday_start_operator">
-						@time_operators
-					</select>
-					<select class="col-md-2" name="monday_start">
-						@time_options
-					</select>
-					</select>
-					<select class="col-md-2" name="monday_end_operator">
-						@time_operators
-					</select>
-					<select class="col-md-2" name="monday_end">
-						@time_options
-					</select>
+				<div class="col-md-2">
+					<h4>Credits</h4>
 				</div>
-				<div class="row">
-					<div class="col-md-4">
-						Tuesday
-					</div>
-					<select class="col-md-2" name="tuesday_start_operator">
-						@time_operators
-					</select>
-					<select class="col-md-2" name="tuesday_start">
-						@time_options
-					</select>
-					<select class="col-md-2" name="tuesday_end_operator">
-						@time_operators
-					</select>
-					<select class="col-md-2" name="tuesday_end">
-						@time_options
-					</select>
+				<div class="col-md-2">
+					<h4>Instructor</h4>
 				</div>
-				<div class="row">
-					<div class="col-md-4">
-						Wednesday
-					</div>
-					<select class="col-md-2" name="wednesday_start_operator">
-						@time_operators
-					</select>
-					<select class="col-md-2" name="wednesday_start">
-						@time_options
-					</select>
-					<select class="col-md-2" name="wednesday_end_operator">
-						@time_operators
-					</select>
-					<select class="col-md-2" name="wednesday_end">
-						@time_options
-					</select>
+				<div class="col-md-2">
+					<h4>Campus</h4>
 				</div>
-				<div class="row">
-					<div class="col-md-4">
-						Thursday
-					</div>
-					<select class="col-md-2" name="thursday_start_operator">
-						@time_operators
-					</select>
-					<select class="col-md-2" name="thursday_start">
-						@time_options	
-					</select>
-					<select class="col-md-2" name="thursday_end_operator">
-						@time_operators
-					</select>
-					<select class="col-md-2" name="thursday_end">
-						@time_options
-					</select>
+			</div>
+			<div class="row">
+				<select class="col-md-2" multiple name="subject">
+					@subject_options
+				</select>
+				<select class="col-md-1" name="number_operator">
+					@operator_options
+				</select>
+				<select class="col-md-1" name="number">
+					@number_options
+				</select>
+				<select class="col-md-2" multiple name="quarter">
+					@quarter_options
+				</select>
+				<select class="col-md-1" name="credits_operator">
+					@operator_options
+				</select>
+				<select class="col-md-1" name="credits">
+					@credit_options
+				</select>
+				<select class="col-md-2" name="instructor">
+					@instructor_options
+				</select>
+				<select class="col-md-2" name="campus">
+					@campus_options
+				</select>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<h4>Days</h4>
 				</div>
-				<div class="row">
-					<div class="col-md-4">
-						Friday
-					</div>
-					<select class="col-md-2" name="friday_start_operator">
-						@time_operators
-					</select>
-					<select class="col-md-2" name="friday_start">
-						@time_options
-					</select>
-					<select class="col-md-2" name="friday_end_operator">
-						@time_operators
-					</select>
-					<select class="col-md-2" name="friday_end">
-						@time_options
-					</select>
+				<div class="col-md-2">
+					<h4>Starts</h4>
 				</div>
-				<div class="row">
-					<div class="col-md-4">
-						Saturday
-					</div>
-					<select class="col-md-2" name="saturday_start_operator">
-						@time_operators
-					</select>
-					<select class="col-md-2" name="saturday_start">
-						@time_options
-					</select>
-					<select class="col-md-2" name="saturday_end_operator">
-						@time_operators
-					</select>
-					<select class="col-md-2" name="saturday_end">
-						@time_options
-					</select>
+				<div class="col-md-2">
+					<h4>Time</h4>
 				</div>
-			</form>
-		</div>
-		*/<script>
+				<div class="col-md-2">
+					<h4>Ends</h4>
+				</div>
+				<div class="col-md-2">
+					<h4>Time</h4>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-2">
+					Monday
+				</div>
+				<input class="col-md-1" type="radio" value="Blah"><label>Hurr</label>
+				<input class="col-md-1" type="radio" value="blah">
+				<input class="col-md-1" type="radio" value="bluh">
+				<select class="col-md-1" name="monday_start_operator">
+					@time_operators
+				</select>
+				<select class="col-md-2" name="monday_start">
+					@time_options
+				</select>
+				</select>
+				<select class="col-md-1" name="monday_end_operator">
+					@time_operators
+				</select>
+				<select class="col-md-2" name="monday_end">
+					@time_options
+				</select>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					Tuesday
+				</div>
+				<select class="col-md-2" name="tuesday_start_operator">
+					@time_operators
+				</select>
+				<select class="col-md-2" name="tuesday_start">
+					@time_options
+				</select>
+				<select class="col-md-2" name="tuesday_end_operator">
+					@time_operators
+				</select>
+				<select class="col-md-2" name="tuesday_end">
+					@time_options
+				</select>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					Wednesday
+				</div>
+				<select class="col-md-2" name="wednesday_start_operator">
+					@time_operators
+				</select>
+				<select class="col-md-2" name="wednesday_start">
+					@time_options
+				</select>
+				<select class="col-md-2" name="wednesday_end_operator">
+					@time_operators
+				</select>
+				<select class="col-md-2" name="wednesday_end">
+					@time_options
+				</select>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					Thursday
+				</div>
+				<select class="col-md-2" name="thursday_start_operator">
+					@time_operators
+				</select>
+				<select class="col-md-2" name="thursday_start">
+					@time_options	
+				</select>
+				<select class="col-md-2" name="thursday_end_operator">
+					@time_operators
+				</select>
+				<select class="col-md-2" name="thursday_end">
+					@time_options
+				</select>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					Friday
+				</div>
+				<select class="col-md-2" name="friday_start_operator">
+					@time_operators
+				</select>
+				<select class="col-md-2" name="friday_start">
+					@time_options
+				</select>
+				<select class="col-md-2" name="friday_end_operator">
+					@time_operators
+				</select>
+				<select class="col-md-2" name="friday_end">
+					@time_options
+				</select>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					Saturday
+				</div>
+				<select class="col-md-2" name="saturday_start_operator">
+					@time_operators
+				</select>
+				<select class="col-md-2" name="saturday_start">
+					@time_options
+				</select>
+				<select class="col-md-2" name="saturday_end_operator">
+					@time_operators
+				</select>
+				<select class="col-md-2" name="saturday_end">
+					@time_options
+				</select>
+			</div>
+		</form>
+	</div>
 </body>
-<!--
-    <head>
-        <title>@title</title>
-        <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">
-        <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
-        <script src="@routes.Assets.versioned("javascripts/hello.js")" type="text/javascript"></script>
-    </head>
-    <body>
-    </body>
--->
 </html>

@@ -422,13 +422,17 @@ public class Application extends Controller
 				"Course_Offered_In_Term COIT LEFT OUTER JOIN Sections S ON " + 
 					"COIT.subject = S.subject AND COIT.num = S.num AND COIT.season = S.season AND " +
 					"COIT.term_type = S.term_type AND COIT.year = S.year " +
-			"WHERE COIT.subject = ? AND COIT.num = ? " + 
-			"ORDER BY COIT.year, " +
-			"CASE " + 
-			"WHEN COIT.season = 'Winter' THEN 1 " +
-			"WHEN COIT.season = 'Spring' THEN 2 " +
-			"WHEN COIT.season = 'Summer' THEN 3 " + 
-			"WHEN COIT.season = 'Fall' THEN 4 ELSE 5 END");
+			"WHERE " +
+				"COIT.subject = ? AND COIT.num = ? " + 
+			"ORDER BY " +
+				"COIT.year, " +
+				"CASE " + 
+					"WHEN COIT.season = 'Winter' THEN 1 " +
+					"WHEN COIT.season = 'Spring' THEN 2 " +
+					"WHEN COIT.season = 'Summer' THEN 3 " + 
+					"WHEN COIT.season = 'Fall' THEN 4 " +
+					"ELSE 5 END, " +
+				"S.section_id NULLS FIRST");
 		statement.setString(1, subject);
 		statement.setString(2, num);
 
@@ -814,7 +818,10 @@ public class Application extends Controller
 					"ON S.instructor = I.name " +
 				"JOIN Course_Offered_In_Term COIT " +
 					"ON COIT.subject = S.subject AND COIT.num = S.num " +
-			"WHERE COIT.subject = ? AND COIT.num = ?");
+			"WHERE " +
+				"COIT.subject = ? AND COIT.num = ?" +
+			"ORDER BY " +
+				"I.name");
 			
 		statement.setString(1, subject);
 		statement.setString(2, number);
@@ -844,7 +851,9 @@ public class Application extends Controller
 				"I.name AS Iname " +
 			"FROM Instructors I, Sections S, Courses_Have CH " +
 			"WHERE " +
-				"I.name = S.instructor AND CH.abbr = S.subject AND CH.num = S.num AND CH.name = ? ");
+				"I.name = S.instructor AND CH.abbr = S.subject AND CH.num = S.num AND CH.name = ? " +
+			"ORDER BY " +
+				"I.name");
 		statement.setString(1, course_name);
 
 		ResultSet rs = statement.executeQuery();

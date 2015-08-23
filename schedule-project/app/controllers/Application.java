@@ -306,22 +306,43 @@ public class Application extends Controller
 		return Html.apply(result);
 	}
 
+	private static List<Term> getTermsInternal() throws SQLException
+	{
+		List<Term> terms = new ArrayList<Term>();
+		Connection conn = DB.getConnection();
+
+		Statement statement = conn.createStatement();
+		ResultSet rs = statement.executeQuery("SELECT season, term_type, year " +
+			"FROM Terms " +
+			"ORDER BY year, " +
+			"CASE " +
+			"WHEN season = 'Winter' THEN 1 " +
+			"WHEN season = 'Spring' THEN 2 " +
+			"WHEN season = 'Summer' THEN 3 " +
+			"WHEN season = 'Fall' THEN 4 ELSE 5 END");
+		
+		while (rs.next())
+		{
+			terms.add(new Term(rs.getString("season"), rs.getString("term_type"), rs.getInt("year")));
+		}
+		rs.close();
+		statement.close();
+		conn.close();
+
+		return terms;
+	}
+
 	public static Html getTermOptions()
 	{
 		String result = "";
-		Connection conn = DB.getConnection();
 		try
 		{
-			Statement statement = conn.createStatement();
-			ResultSet rs = statement.executeQuery("SELECT season, term_type, year FROM Terms");
-			while (rs.next())
+			List<Term> terms = getTermsInternal();
+			for (int i = 0; i < terms.size(); i++)
 			{
-				String term = new Term(rs.getString("season"), rs.getString("term_type"), rs.getInt("year")).toString();
+				String term = terms.get(i).toString();
 				result += "<option value=\"" + term + "\">" + term + "</option>";
 			}
-			rs.close();
-			statement.close();
-			conn.close();
 		}
 		catch (SQLException e)
 		{

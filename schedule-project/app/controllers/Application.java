@@ -306,22 +306,43 @@ public class Application extends Controller
 		return Html.apply(result);
 	}
 
+	private static List<Term> getTermsInternal() throws SQLException
+	{
+		List<Term> terms = new ArrayList<Term>();
+		Connection conn = DB.getConnection();
+
+		Statement statement = conn.createStatement();
+		ResultSet rs = statement.executeQuery("SELECT season, term_type, year " +
+			"FROM Terms " +
+			"ORDER BY year, " +
+			"CASE " +
+			"WHEN season = 'Winter' THEN 1 " +
+			"WHEN season = 'Spring' THEN 2 " +
+			"WHEN season = 'Summer' THEN 3 " +
+			"WHEN season = 'Fall' THEN 4 ELSE 5 END");
+		
+		while (rs.next())
+		{
+			terms.add(new Term(rs.getString("season"), rs.getString("term_type"), rs.getInt("year")));
+		}
+		rs.close();
+		statement.close();
+		conn.close();
+
+		return terms;
+	}
+
 	public static Html getTermOptions()
 	{
 		String result = "";
-		Connection conn = DB.getConnection();
 		try
 		{
-			Statement statement = conn.createStatement();
-			ResultSet rs = statement.executeQuery("SELECT season, term_type, year FROM Terms");
-			while (rs.next())
+			List<Term> terms = getTermsInternal();
+			for (int i = 0; i < terms.size(); i++)
 			{
-				String term = new Term(rs.getString("season"), rs.getString("term_type"), rs.getInt("year")).toString();
+				String term = terms.get(i).toString();
 				result += "<option value=\"" + term + "\">" + term + "</option>";
 			}
-			rs.close();
-			statement.close();
-			conn.close();
 		}
 		catch (SQLException e)
 		{
@@ -401,13 +422,17 @@ public class Application extends Controller
 				"Course_Offered_In_Term COIT LEFT OUTER JOIN Sections S ON " + 
 					"COIT.subject = S.subject AND COIT.num = S.num AND COIT.season = S.season AND " +
 					"COIT.term_type = S.term_type AND COIT.year = S.year " +
-			"WHERE COIT.subject = ? AND COIT.num = ? " + 
-			"ORDER BY COIT.year, " +
-			"CASE " + 
-			"WHEN COIT.season = 'Winter' THEN 1 " +
-			"WHEN COIT.season = 'Spring' THEN 2 " +
-			"WHEN COIT.season = 'Summer' THEN 3 " + 
-			"WHEN COIT.season = 'Fall' THEN 4 ELSE 5 END");
+			"WHERE " +
+				"COIT.subject = ? AND COIT.num = ? " + 
+			"ORDER BY " +
+				"COIT.year, " +
+				"CASE " + 
+					"WHEN COIT.season = 'Winter' THEN 1 " +
+					"WHEN COIT.season = 'Spring' THEN 2 " +
+					"WHEN COIT.season = 'Summer' THEN 3 " + 
+					"WHEN COIT.season = 'Fall' THEN 4 " +
+					"ELSE 5 END, " +
+				"S.section_id NULLS FIRST");
 		statement.setString(1, subject);
 		statement.setString(2, num);
 
@@ -793,7 +818,10 @@ public class Application extends Controller
 					"ON S.instructor = I.name " +
 				"JOIN Course_Offered_In_Term COIT " +
 					"ON COIT.subject = S.subject AND COIT.num = S.num " +
-			"WHERE COIT.subject = ? AND COIT.num = ?");
+			"WHERE " +
+				"COIT.subject = ? AND COIT.num = ?" +
+			"ORDER BY " +
+				"I.name");
 			
 		statement.setString(1, subject);
 		statement.setString(2, number);
@@ -823,7 +851,9 @@ public class Application extends Controller
 				"I.name AS Iname " +
 			"FROM Instructors I, Sections S, Courses_Have CH " +
 			"WHERE " +
-				"I.name = S.instructor AND CH.abbr = S.subject AND CH.num = S.num AND CH.name = ? ");
+				"I.name = S.instructor AND CH.abbr = S.subject AND CH.num = S.num AND CH.name = ? " +
+			"ORDER BY " +
+				"I.name");
 		statement.setString(1, course_name);
 
 		ResultSet rs = statement.executeQuery();
